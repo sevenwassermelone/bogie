@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install *)",
+      "Bash(npm run *)",
+      "Bash(curl -I http://127.0.0.1:5173)",
+      "Bash(curl -I http://127.0.0.1:5175/)",
+      "Bash(osascript -e ' *)",
+      "Bash(node -e \"try{require.resolve\\('playwright'\\); console.log\\('playwright'\\)}catch\\(e\\){try{require.resolve\\('puppeteer'\\); console.log\\('puppeteer'\\)}catch\\(e2\\){console.log\\('none'\\)}}\")",
+      "Bash(\"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome\" --headless=new --remote-debugging-port=9223 --user-data-dir=/tmp/forward-view-chrome --disable-gpu http://localhost:5178/)"
+    ],
+    "additionalDirectories": [
+      "/tmp"
+    ]
+  }
+}
