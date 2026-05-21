@@ -165,8 +165,8 @@ export const dashboardData = {
     { label: '故障状态', value: '无' },
   ] as PowerStatusItem[],
   powerImages: {
-    overview: '/src/imgs/electricity.png',
-    state: '/src/imgs/state_elec.png',
+    overview: '/public/imgs/electricity.png',
+    state: '/public/imgs/state_elec.png',
   },
   wheelsetBars: [
     { label: '轮对1转速', value: '56.2', unit: 'rpm', progress: 56.2 },

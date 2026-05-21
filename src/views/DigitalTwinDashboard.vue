@@ -54,7 +54,7 @@
                     </div>
                     <div v-else-if="panel.title === '牵引系统'" class="left-monitor-traction">
                       <div class="left-monitor-traction-image-wrap">
-                        <img class="left-monitor-traction-image" src="/src/imgs/a.png" alt="牵引系统图示" />
+                        <img class="left-monitor-traction-image" src="/public/imgs/a.png" alt="牵引系统图示" />
                       </div>
                       <div class="left-monitor-card__grid">
                         <div
@@ -145,7 +145,7 @@
                         >
                           <img
                             class="left-monitor-cam__image"
-                            :src="`/src/imgs/${index + 1}.png`"
+                            :src="`/public/imgs/${index + 1}.png`"
                             :alt="cam.label"
                           />
                           <span
@@ -174,7 +174,7 @@
                   <img
                     class="scene-train-image"
                     :class="{ 'scene-train-image--clickable': canOpenSceneDialog }"
-                    src="/src/imgs/train.png"
+                    src="/public/imgs/train.png"
                     alt="列车示意图"
                     @click="handleSceneImageClick"
                   />
@@ -373,7 +373,7 @@
       </div>
       <div class="forward-view-dialog__body">
         <div class="forward-view-dialog__image-wrap">
-          <img class="forward-view-dialog__image" src="/src/imgs/advance.png" alt="前向视角" />
+          <img class="forward-view-dialog__image" src="/public/imgs/advance.png" alt="前向视角" />
         </div>
         <div class="forward-view-dialog__meta">
           <span>{{ currentTimeText }}</span>
@@ -522,7 +522,7 @@ const isStopped = computed(() => sceneStatus.state === '停止运行')
 const isRunning = computed(() => sceneStatus.state === '低速运行')
 const canOpenSceneDialog = computed(() => isStopped.value || isRunning.value)
 const sceneDialogTitle = computed(() => '')
-const sceneDialogImage = computed(() => (isRunning.value ? '/src/imgs/run.png' : '/src/imgs/stop.png'))
+const sceneDialogImage = computed(() => (isRunning.value ? '/public/imgs/run.png' : '/public/imgs/stop.png'))
 
 const sceneStatusText = computed(() => [
   { label: '运行状态', value: sceneStatus.state },
