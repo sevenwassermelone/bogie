@@ -307,6 +307,8 @@
                         v-for="item in dashboardData.healthBreakdown"
                         :key="item.label"
                         class="progress-item"
+                        :class="{ 'progress-item--clickable': item.label === '受电弓' }"
+                        @click="handleHealthItemClick(item.label)"
                       >
                         <span class="progress-label">{{ item.label }}</span>
                         <div class="progress-bar">
@@ -322,7 +324,7 @@
 
                   <div class="evaluation-section">
                     <div class="evaluation-section__title">
-                      <h4>告警信息</h4>
+                      <h4 class="evaluation-section__title-link" @click="openAlertDialog">告警信息</h4>
                       <span></span>
                     </div>
                     <div class="alert-summary-grid">
@@ -344,7 +346,7 @@
                         <span>状态</span>
                       </div>
                       <div
-                        v-for="item in dashboardData.alerts"
+                        v-for="item in alertList"
                         :key="`${item.time}-${item.message}`"
                         class="alert-table__row"
                       >
@@ -391,7 +393,7 @@
     <div class="external-dialog external-dialog--power">
       <div class="scene-dialog__header">
         <h4>供电系统监测</h4>
-        <button class="scene-dialog__back" type="button" @click="closePowerDialog">返回</button>
+        <button class="scene-dialog__close" type="button" aria-label="关闭" @click="closePowerDialog">×</button>
       </div>
       <div class="power-dialog__body">
         <div class="power-dialog__left">
@@ -453,6 +455,92 @@
       </div>
     </div>
   </div>
+  <div v-if="showPantographDialog" class="external-dialog-mask" @click.self="closePantographDialog">
+    <div class="external-dialog external-dialog--pantograph">
+      <div class="scene-dialog__header">
+        <h4>受电弓详情</h4>
+        <button class="scene-dialog__close" type="button" aria-label="关闭" @click="closePantographDialog">×</button>
+      </div>
+      <div class="pantograph-dialog__body">
+        <div class="pantograph-dialog__image-wrap">
+          <img class="pantograph-dialog__image" src="/imgs/electricity.png" alt="受电弓图示" />
+        </div>
+        <div class="pantograph-dialog__health">
+          <div class="pantograph-dialog__health-header">
+            <span>受电弓健康度</span>
+            <strong>96%</strong>
+          </div>
+          <div class="pantograph-dialog__health-bar">
+            <div class="pantograph-dialog__health-fill" :style="{ width: `${pantographHealth.value}%` }" />
+          </div>
+          <span class="pantograph-dialog__temperature">温度 {{ pantographHealth.temperature }}</span>
+        </div>
+        <div class="pantograph-dialog__section">
+          <div class="pantograph-dialog__section-title">
+            <h5>受电弓运行状态</h5>
+          </div>
+          <div class="pantograph-dialog__list">
+            <div
+              v-for="item in pantographStatus"
+              :key="item.label"
+              class="metric-item metric-item--row pantograph-dialog__metric-row"
+            >
+              <span class="metric-label">{{ item.label }}</span>
+              <span class="metric-value-group">
+                <span class="metric-value">{{ item.value }}</span>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div v-if="showAlertDialog" class="external-dialog-mask" @click.self="closeAlertDialog">
+    <div class="external-dialog external-dialog--alert">
+      <div class="alert-dialog__header">
+        <div class="alert-dialog__heading">
+          <span class="alert-dialog__eyebrow"></span>
+          <h4>告警信息</h4>
+        </div>
+        <div class="alert-dialog__header-meta">
+          <span class="alert-dialog__meta-item alert-dialog__meta-item--danger">紧急 {{ alertStats.danger }}</span>
+          <span class="alert-dialog__meta-item alert-dialog__meta-item--warning">重要 {{ alertStats.warning }}</span>
+          <span class="alert-dialog__meta-item alert-dialog__meta-item--info">待处理 {{ alertStats.pending }}</span>
+          <button class="alert-dialog__close" type="button" aria-label="关闭" @click="closeAlertDialog">×</button>
+        </div>
+      </div>
+      <div class="alert-dialog__body">
+        <div class="alert-dialog__panel">
+          <div class="alert-dialog__table-head">
+            <span>时间</span>
+            <span>告警内容</span>
+            <span>等级</span>
+            <span>状态</span>
+            <span>操作</span>
+          </div>
+          <div class="alert-dialog__table-body">
+            <div
+              v-for="item in alertList"
+              :key="`${item.time}-${item.message}`"
+              class="alert-dialog__table-row"
+            >
+              <span class="alert-time">{{ item.time }}</span>
+              <span class="alert-message">{{ item.message }}</span>
+              <span class="alert-table__level" :style="{ color: toneColor(item.level) }">
+                {{ alertLevelText(item.level) }}
+              </span>
+              <span class="alert-status">{{ item.status }}</span>
+              <span class="alert-actions">
+                <button type="button" class="alert-action-button" @click="handleAlertAction('detail', item)">详情</button>
+                <button type="button" class="alert-action-button alert-action-button--ghost" @click="handleAlertAction('ignore', item)">忽略</button>
+                <button type="button" class="alert-action-button alert-action-button--primary" @click="handleAlertAction('confirm', item)">确认</button>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -462,6 +550,7 @@ import HeaderBar from '../components/dashboard/HeaderBar.vue'
 import StatusGauge from '../components/dashboard/StatusGauge.vue'
 import TrendChart from '../components/dashboard/TrendChart.vue'
 import { dashboardData, type StatusTone } from '../mock/dashboard'
+import type { AlertItem } from '../mock/dashboard'
 import { useScreenScale } from '../utils/scale'
 
 const { shellStyle, screenStyle } = useScreenScale()
@@ -475,7 +564,24 @@ const sceneStatus = reactive({
 
 const showBogieDialog = ref(false)
 const showPowerDialog = ref(false)
+const showPantographDialog = ref(false)
 const showForwardViewDialog = ref(false)
+const showAlertDialog = ref(false)
+const pantographHealth = { value: 96, temperature: '27.6℃' }
+const pantographStatus = [
+  { label: '受电弓电压', value: '27.6V' },
+  { label: '受电弓电流', value: '12.4A' },
+  { label: '升降位置', value: '100%' },
+  { label: '接触压力', value: '98N' },
+  { label: '受电弓状态', value: '已升起' },
+  { label: '运行状态', value: '正常' },
+]
+const alertList = ref<AlertItem[]>(dashboardData.alerts.map((item) => ({ ...item })))
+const alertStats = computed(() => ({
+  danger: alertList.value.filter((item) => item.level === 'danger').length,
+  warning: alertList.value.filter((item) => item.level === 'warning').length,
+  pending: alertList.value.filter((item) => item.status === '待处理' || item.status === '处理中').length,
+}))
 const forwardViewActions = ['实时视频', '录像回放', '截图', '关闭']
 const currentTimeText = computed(() => new Date().toLocaleString('sv-SE', { hour12: false }))
 
@@ -497,6 +603,35 @@ const handlePowerTitleClick = (title: string) => {
 
 const closePowerDialog = () => {
   showPowerDialog.value = false
+}
+
+const handleHealthItemClick = (label: string) => {
+  if (label === '受电弓') {
+    showPantographDialog.value = true
+  }
+}
+
+const closePantographDialog = () => {
+  showPantographDialog.value = false
+}
+
+const openAlertDialog = () => {
+  showAlertDialog.value = true
+}
+
+const closeAlertDialog = () => {
+  showAlertDialog.value = false
+}
+
+const handleAlertAction = (action: 'detail' | 'ignore' | 'confirm', item: AlertItem) => {
+  if (action === 'ignore') {
+    item.status = '已忽略'
+    return
+  }
+
+  if (action === 'confirm') {
+    item.status = '已确认'
+  }
 }
 
 const bogieInfo = [
@@ -551,7 +686,9 @@ const handleToolbarControl = (label: string) => {
     sceneStatus.speed = '2.3km/h'
     showBogieDialog.value = false
     showPowerDialog.value = false
+    showPantographDialog.value = false
     showForwardViewDialog.value = false
+    showAlertDialog.value = false
     return
   }
 

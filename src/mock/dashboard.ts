@@ -244,8 +244,8 @@ export const dashboardData = {
   ] as RankItem[],
   alerts: [
     { level: 'warning', message: '轴箱温度轻微波动', time: '10:18:45', status: '待处理' },
-    { level: 'danger', message: '牵引电机1温度接近阈值', time: '10:17:52', status: '处理中' },
-    { level: 'info', message: '受电弓接触状态稳定', time: '10:17:20', status: '已确认' },
+    { level: 'danger', message: '牵引电机1温度超过阈值', time: '10:17:52', status: '处理中' },
+    // { level: 'info', message: '受电弓接触状态稳定', time: '10:17:20', status: '已确认' },
     // { level: 'success', message: '车体运行姿态正常', time: '10:15:02', status: '已恢复' },
   ] as AlertItem[],
   rankList: [
